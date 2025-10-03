@@ -1,0 +1,166 @@
+<!-- Rialo Protocol Puzzle: Level 1 Block Assembly -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rialo Protocol Puzzle</title>
+  <style>
+    body {
+      background: #111;
+      color: #e5e5e5;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+    }
+    .puzzle-container {
+      width: 100vw;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .puzzle-title {
+      font-size: 2.5em;
+      margin-top: 48px;
+      color: #fff;
+      text-align: center;
+    }
+    .puzzle-desc {
+      margin: 0;
+      color: #bbf7d0;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .block-zone {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 36px;
+      margin: 20px 0 32px 0;
+      min-height: 220px;
+    }
+    .block-slot {
+      width: 110px;
+      height: 110px;
+      background: #222;
+      border: 2px solid #39404a;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 12px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+      position: relative;
+      transition: border 0.15s;
+    }
+    .block-slot.filled {
+      border: 2px solid #bbf7d0;
+      background: #151c1a;
+    }
+    .draggable-block {
+      width: 90px;
+      height: 90px;
+      border-radius: 14px;
+      background: #151c1a;
+      border: 2px solid #444;
+      color: #bbf7d0;
+      font-weight: 600;
+      font-size: 1.12em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 8px;
+      cursor: grab;
+      user-select: none;
+      z-index: 501;
+      transition: box-shadow 0.2s, border 0.2s;
+    }
+    .draggable-block.dragging {
+      opacity: 0.7;
+      box-shadow: 0 8px 24px #bbf7d0aa;
+      border: 2px solid #bbf7d0;
+    }
+    .drop-correct {
+      animation: border-shine 0.7s linear;
+    }
+    @keyframes border-shine {
+      0% { border-color: #bbf7d0; }
+      100% { border-color: #76f7e1; }
+    }
+    #success-msg {
+      display: none;
+      margin-top: 32px;
+      font-size: 1.5em;
+      color: #bbf7d0;
+      animation: shine 1.8s linear;
+      background: #161919;
+      padding: 16px 28px;
+      border-radius: 12px;
+      border: 1.5px solid #bbf7d0;
+      box-shadow: 0 0 32px #bbf7d01a;
+    }
+    @keyframes shine {
+      0% { box-shadow: none; }
+      50% { box-shadow: 0 0 28px #bbf7d0; }
+      100% { box-shadow: 0 0 12px #bbf7d07a;}
+    }
+  </style>
+</head>
+<body>
+  <div class="puzzle-container">
+    <div class="puzzle-title">Level 1: Block Assembly</div>
+    <div class="puzzle-desc">Drag each Rialo protocol component to its correct slot below.<br/>Where does each piece fit in the network?</div>
+    <div style="display:flex; justify-content:center; margin-bottom:28px;">
+      <!-- You may replace the words with <img> tags using the Rialo assets you provided -->
+      <div class="draggable-block" draggable="true" id="block1" data-solution="slot1">Agent</div>
+      <div class="draggable-block" draggable="true" id="block2" data-solution="slot2">Server</div>
+      <div class="draggable-block" draggable="true" id="block3" data-solution="slot3">Judge</div>
+      <div class="draggable-block" draggable="true" id="block4" data-solution="slot4">Customer</div>
+    </div>
+    <div class="block-zone">
+      <div class="block-slot" id="slot1"><span style="color:#888; font-size:0.9em;">Agent</span></div>
+      <div class="block-slot" id="slot2"><span style="color:#888; font-size:0.9em;">Server</span></div>
+      <div class="block-slot" id="slot3"><span style="color:#888; font-size:0.9em;">Judge</span></div>
+      <div class="block-slot" id="slot4"><span style="color:#888; font-size:0.9em;">Customer</span></div>
+    </div>
+    <div id="success-msg">Block structure completed!<br> Rialo’s modular infrastructure empowers seamless, trust-minimized coordination.</div>
+  </div>
+  <script>
+    const blocks = document.querySelectorAll('.draggable-block');
+    const slots = document.querySelectorAll('.block-slot');
+    let filled = 0;
+
+    blocks.forEach(block => {
+      block.addEventListener('dragstart', e => {
+        block.classList.add('dragging');
+        setTimeout(() => { block.style.display = "none"; }, 1);
+      });
+      block.addEventListener('dragend', e => {
+        block.classList.remove('dragging');
+        block.style.display = "";
+      });
+    });
+
+    slots.forEach(slot => {
+      slot.addEventListener('dragover', e => {
+        e.preventDefault();
+      });
+      slot.addEventListener('drop', e => {
+        e.preventDefault();
+        if (slot.classList.contains('filled')) return;
+        const block = document.querySelector('.dragging') || Array.from(blocks).find(b=>b.style.display==="none");
+        if (block && block.dataset.solution === slot.id) {
+          slot.innerHTML = '';
+          slot.appendChild(block);
+          slot.classList.add('filled','drop-correct');
+          block.setAttribute('draggable', false);
+          filled++;
+          setTimeout(()=>slot.classList.remove('drop-correct'), 600);
+          if (filled===4) document.getElementById('success-msg').style.display = 'block';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
