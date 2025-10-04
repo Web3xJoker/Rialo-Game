@@ -305,14 +305,14 @@
 #get-badge-btn {
   background: #ece7db;
   color: #222;
-  padding: 32px 90px;     /* increased padding for a larger button */
-  font-size: 2.3em;       /* larger text size */
+  padding: 22px 58px;     /* reduced padding for a smaller button */
+  font-size: 1.4em;       /* reduced text size */
   font-weight: 700;
-  border-radius: 26px;    /* rounder corners for a bold look */
-  box-shadow: 0 0 48px 14px #FFD700, 0 2px 15px #0006;
-  margin-top: 36px;
+  border-radius: 20px;    /* slightly less rounded */
+  box-shadow: 0 0 32px 8px #FFD700, 0 2px 10px #0006;
+  margin-top: 28px;
   border: none;
-  display: flex;          /* enables centering horizontally and vertically */
+  display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -358,6 +358,29 @@
 }
 #share-x-btn:hover {
   background: #f6f6f6;
+}
+
+#back-home-btn {
+  background: #ece7db;
+  color: #232323;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 16px 44px;
+  font-size: 1.1em;
+  border: none;
+  box-shadow: 0 0 8px 2px #bbb5;
+  cursor: pointer;
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.22s, color 0.18s, transform 0.18s;
+}
+#back-home-btn:active {
+  transform: scale(0.97);
+}
+#back-home-btn:hover {
+  background: #dad7ce;
 }
 
 
@@ -426,17 +449,14 @@
   </div>
 
   <!-- Stage completion overlay -->
-  <div id="stage-complete-overlay">
-    <h1>Puzzle Completed!</h1>
+<div id="stage-complete-overlay">
+  <h1>Puzzle Completed!</h1>
   <button id="get-badge-btn">Get OG Badge</button>
-
-  <!-- Badge image, hidden initially -->
   <img id="og-badge" src="OG_Badge.png" alt="Rialo OG Badge" style="display:none; width:200px; margin-top: 30px; border-radius: 20px; box-shadow: 0 0 40px 12px gold;">
-  
-  <!-- Share button, hidden initially -->
-<button id="share-x-btn" style="display:none;">Share on X</button>
+  <button id="share-x-btn" style="display:none;">Share on X</button>
+  <button id="back-home-btn" style="display:none;">Back to Home</button>
+</div>
 
-  </div>
 
   <script>
     const playButton = document.getElementById('play-button');
@@ -526,6 +546,8 @@
 const getBadgeBtn = document.getElementById('get-badge-btn');
 const ogBadge = document.getElementById('og-badge');
 const shareXBtn = document.getElementById('share-x-btn');
+const backHomeBtn = document.getElementById('back-home-btn');
+
 
 getBadgeBtn.addEventListener('click', () => {
   // Hide get badge button
@@ -535,6 +557,8 @@ getBadgeBtn.addEventListener('click', () => {
   // Show share button after animation completes (1.2s)
   setTimeout(() => {
     shareXBtn.style.display = 'inline-block';
+    backHomeBtn.style.display = 'inline-block'; // Show Back to Home
+
   }, 1200);
 });
 
@@ -552,9 +576,24 @@ shareXBtn.addEventListener('click', () => {
   alert("Badge image downloaded. When you write your tweet, attach the badge image!");
 
   // Open X share window with message
-  const tweetText = encodeURIComponent("I just won my Rialo OG Badge...");
+  const tweetText = encodeURIComponent("I just won my Rialo OG Badge by completing the Rialo Flow Puzzle! Get yours now!");
   const tweetUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
   window.open(tweetUrl, '_blank', 'width=550,height=420');
+});
+
+backHomeBtn.addEventListener('click', () => {
+  // Hide overlay & puzzle, show splash
+  stageCompleteOverlay.classList.remove('show');
+  stageCompleteOverlay.classList.add('hide');
+  puzzle.classList.remove('show');
+  puzzle.classList.add('hide');
+  splash.style.display = "";
+  splash.classList.remove('hide');
+  // Optionally hide badge/share/home
+  ogBadge.classList.remove('show');
+  shareXBtn.style.display = 'none';
+  backHomeBtn.style.display = 'none';
+  getBadgeBtn.style.display = 'inline-block';
 });
 
   </script>
