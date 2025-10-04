@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rialo Protocol Flow Puzzle</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #111;
+      color: #ece7db;
+      font-family: 'Inter', Arial, sans-serif;
+    }
+    body {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    /* ---- Smooth fade/scale transitions ---- */
+    #splash, #puzzle, #stage-complete-overlay {
+      transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1), visibility 0.5s;
+      opacity: 1;
+      transform: scale(1);
+      visibility: visible;
+    }
+    #splash.hide, #puzzle.hide, #stage-complete-overlay.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: scale(0.98);
+    }
+    #puzzle, #stage-complete-overlay {
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.98);
+    }
+    #puzzle.show, #stage-complete-overlay.show {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+    }
+    /* -------- Positioning and layout preserved -------- */
+    #splash {
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+      background: #111;
+    }
+    #splash h1 {
+      font-size: 3em;
+      font-weight: bold;
+      margin-bottom: 0.3em;
+    }
+    #splash p {
+      color: #ece7db;
+      font-size: 1.3em;
+      margin-bottom: 1.5em;
+    }
+    #play-button {
+      background: #1ada93;
+      border: none;
+      padding: 12px 40px;
+      font-size: 1.2em;
+      font-weight: 600;
+      color: #111;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 6px 15px #1ada9399;
+      transition: background 0.3s, box-shadow 0.3s, transform 0.22s cubic-bezier(0.4,0,0.2,1);
+    }
+    #play-button:active {
+      transform: scale(0.96);
+    }
+    #puzzle {
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .puzzle-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .puzzle-title {
+      font-size: 2em;
+      text-align: center;
+      margin-top: 36px;
+      font-weight: bold;
+    }
+    .puzzle-desc {
+      color: #ffffff;
+      text-align: center;
+      margin-bottom: 22px;
+      font-size: 1.09em;
+    }
+    .center-area {
+      flex: 1;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+    .draggable-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 60px;
+    }
+    .draggable-step {
+      background: #23292d;
+      color: #ece7db;
+      border-radius: 12px;
+      border: 2px solid #ffffff;
+      width: 150px;
+      min-height: 48px;
+      font-size: 1em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      cursor: grab;
+      user-select: none;
+      z-index: 6;
+      box-shadow: 0 2px 4px #0002;
+      transition: box-shadow 0.23s, transform 0.23s;
+    }
+    .draggable-step.dragging {
+      opacity:0.7; 
+      box-shadow: 0 8px 32px #FFD700aa, 0 2px 12px #0006;
+      border:2px solid #ffffff;
+      transform: scale(1.10);
+      z-index:1000;
+    }
+    .main-flow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 100vw;
+    }
+    .protocol-row {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      width: 1200px;
+      margin: 0 auto 18px auto;
+      z-index: 3;
+    }
+    .protocol-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 120px;
+    }
+    .protocol-box img {
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      background: #222;
+      border: 2px solid #ffffff;
+      margin-bottom: 8px;
+    }
+    .protocol-label {
+      color: #ffffff;
+      font-size: 1.09em;
+      text-align: center;
+    }
+    .protocol-box.intermediate {
+      min-width: 150px;
+      margin-left: 6px;
+      margin-right: 6px;
+    }
+    .intermediate-box-inner {
+      width: 70px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      border: 2px dashed #ffffff;
+      background: #181c22;
+      margin-bottom: 8px;
+      color: #ffffff;
+      font-size: 1.3em;
+      position: relative;
+    }
+    .step-drop-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      width: 1200px;
+      margin: 48px auto 34px auto;
+      z-index: 2;
+    }
+    .step-drop {
+      position: relative;
+      width: 150px;
+      height: 54px;
+      background: #161c20;
+      border: 2px solid #39404a;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size:1em;
+      transition: border 0.2s;
+      position: relative;
+      z-index: 3;
+    }
+    .step-drop.filled {
+      border:2px solid #39404a;
+      background: #222;
+      color: #39404a;
+    }
+    .drop-number {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3em;
+      font-weight: 700;
+      color: rgba(187, 247, 208, 0.15);
+      pointer-events: none;
+      user-select: none;
+      transition: opacity 0.3s ease;
+      z-index: 1;
+    }
+    .step-drop.filled .drop-number {
+      opacity: 0;
+      visibility: hidden;
+    }
+    /* Hint styling at bottom */
+    #hint {
+      display: none;
+      width: 100%;
+      padding: 12px 0;
+      text-align: center;
+      font-size: 1em;
+      color: #0af0e4;
+      background: #111;
+      border-top: 1px solid #39404a;
+      user-select: none;
+      transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1);
+      opacity: 1;
+    }
+    #hint.hide { opacity: 0; }
+    #hint a {
+      color: #0af0e4;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+    /* Overlay and next button (retain original structure/placement) */
+    #stage-complete-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #111;
+      color: #ece7db;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      font-family: 'Inter', Arial, sans-serif;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: scale(0.97);
+      transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1), visibility 0.5s;
+    }
+    #stage-complete-overlay.show {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+    #stage-complete-overlay h1 {
+      font-size: 4em;
+      font-weight: 900;
+      margin: 0 0 40px 0;
+      color: #ece7db;
+      text-shadow: 0 0 44px #FFD700, 0 6px 32px #FFD70044, 0 0 0 #ece7db;
+      letter-spacing: 2px;
+    }
+    #next-stage-btn {
+      background: #ece7db;
+      color: #222;
+      padding: 24px 64px;
+      font-size: 2em;
+      font-weight: 700;
+      border-radius: 20px;
+      box-shadow: 0 0 32px 8px #FFD700, 0 2px 12px #0006;
+      margin-top: 24px;
+      border: none;
+      transition: background 0.4s, box-shadow 0.3s, transform 0.22s cubic-bezier(0.4,0,0.2,1);
+    }
+    #next-stage-btn:active {
+      transform: scale(0.96);
+    }
+    #next-stage-btn:hover {
+      background: #ede8e0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div id="splash">
+    <h1>Rialo Puzzle Game</h1>
+    <p>Complete the 3 stages to win the Rialo OG Badge</p>
+    <button id="play-button">Play</button>
+  </div>
+
+  <!-- Puzzle Container -->
+  <div id="puzzle" class="puzzle-container">
+    <div class="puzzle-title">Rialo Protocol Flow Puzzle</div>
+    <div class="puzzle-desc">
+      Match each protocol step to the flow structure.
+    </div>
+    <div class="center-area">
+      <div class="draggable-row">
+        <div class="draggable-step" draggable="true" data-step="1">Contract Minted</div>
+        <div class="draggable-step" draggable="true" data-step="3">Task Result to Contract Address</div>
+        <div class="draggable-step" draggable="true" data-step="2">Send Contract Address</div>
+        <div class="draggable-step" draggable="true" data-step="4">Task Result and Contract Address</div>
+        <div class="draggable-step" draggable="true" data-step="5">Task Result to Contract Address</div>
+        <div class="draggable-step" draggable="true" data-step="6">Funds Released</div>
+        <div class="draggable-step" draggable="true" data-step="7">Task Result</div>
+      </div>
+      <div class="main-flow">
+        <div class="protocol-row">
+          <div class="protocol-box">
+            <img src="customer.png" alt="Customer" />
+            <div class="protocol-label">Customer</div>
+          </div>
+          <div class="protocol-box">
+            <img src="agent.png" alt="Agent" />
+            <div class="protocol-label">Agent</div>
+          </div>
+          <div class="protocol-box intermediate">
+            <div class="step-drop" id="drop2" data-accept="2"><span class="drop-number">2</span></div>
+          </div>
+          <div class="protocol-box">
+            <img src="server.png" alt="Server" />
+            <div class="protocol-label">Server</div>
+          </div>
+          <div class="protocol-box">
+            <img src="judge.png" alt="Judge" />
+            <div class="protocol-label">Judge</div>
+          </div>
+        </div>
+        <div class="step-drop-row">
+          <div class="step-drop" id="drop1" data-accept="1"><span class="drop-number">1</span></div>
+          <div class="step-drop" id="drop3" data-accept="7"><span class="drop-number">7</span></div>
+          <div class="step-drop" id="drop4" data-accept="5"><span class="drop-number">3</span></div>
+          <div class="step-drop" id="drop5" data-accept="6"><span class="drop-number">6</span></div>
+          <div class="step-drop" id="drop6" data-accept="4"><span class="drop-number">4</span></div>
+          <div class="step-drop" id="drop7" data-accept="3"><span class="drop-number">5</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="hint">
+    Hint : Refer to Rialo's <a href="https://www.rialo.io/posts/making-the-agent-economy-simple-and-safe-with-rialo" target="_blank" rel="noopener noreferrer">SCALE</a>
+  </div>
+
+  <!-- Stage completion overlay -->
+  <div id="stage-complete-overlay">
+    <h1>Stage 1 Completed!</h1>
+    <button id="next-stage-btn">Next Stage &rarr;</button>
+  </div>
+
+  <script>
+    const playButton = document.getElementById('play-button');
+    const splash = document.getElementById('splash');
+    const puzzle = document.getElementById('puzzle');
+    const hint = document.getElementById('hint');
+    const stageCompleteOverlay = document.getElementById('stage-complete-overlay');
+    const nextStageBtn = document.getElementById('next-stage-btn');
+
+    function shuffleDraggables() {
+      const container = document.querySelector('.draggable-row');
+      const items = Array.from(container.children);
+      for (let i = items.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [items[i], items[j]] = [items[j], items[i]];
+      }
+      items.forEach(item => container.appendChild(item));
+    }
+
+    // Initial states
+    splash.classList.remove("hide");
+    puzzle.classList.remove("show");
+    puzzle.classList.add("hide");
+    stageCompleteOverlay.classList.remove("show");
+    stageCompleteOverlay.classList.add("hide");
+
+    playButton.addEventListener('click', () => {
+      splash.classList.add('hide');
+      setTimeout(() => {
+        splash.style.display = "none";
+        puzzle.classList.add('show');
+        puzzle.classList.remove('hide');
+        hint.style.display = "block";
+      }, 700);
+      shuffleDraggables();
+    });
+
+    const drags = document.querySelectorAll('.draggable-step');
+    const drops = document.querySelectorAll('.step-drop');
+    drags.forEach(d => {
+      d.addEventListener('dragstart', e => {
+        d.classList.add('dragging');
+        setTimeout(() => { d.style.visibility = "hidden"; }, 1);
+      });
+      d.addEventListener('dragend', e => {
+        d.classList.remove('dragging');
+        d.style.visibility = "";
+      });
+    });
+
+    function checkPuzzleComplete() {
+      return Array.from(drops).every(drop => {
+        if (!drop.querySelector('.draggable-step')) return false;
+        const drag = drop.querySelector('.draggable-step');
+        return drag.dataset.step === drop.dataset.accept;
+      });
+    }
+
+    drops.forEach(drop => {
+      drop.addEventListener('dragover', e => e.preventDefault());
+      drop.addEventListener('drop', e => {
+        e.preventDefault();
+        const drag = document.querySelector('.draggable-step.dragging') || Array.from(drags).find(d => d.style.visibility === "hidden");
+        if (drag && drop.dataset.accept === drag.dataset.step && !drop.querySelector('.draggable-step')) {
+          drop.appendChild(drag);
+          drop.classList.add('filled');
+          drag.setAttribute('draggable', 'false');
+          drag.style.transition = "transform 0.36s cubic-bezier(0.4,0,0.2,1)";
+          drag.style.transform = "scale(1)";
+          setTimeout(()=>{
+            drag.style.transition = ""; 
+            drag.style.transform = "";
+          }, 360);
+
+          // Check puzzle completion on every drop
+          if (checkPuzzleComplete()) {
+            setTimeout(() => { // short delay for effect
+              stageCompleteOverlay.classList.add('show');
+              stageCompleteOverlay.classList.remove('hide');
+              stageCompleteOverlay.style.display = 'flex';
+            }, 400);
+          }
+        }
+      });
+    });
+
+    nextStageBtn.addEventListener('click', () => {
+      alert('Next stage coming soon!');
+      stageCompleteOverlay.classList.remove('show');
+      stageCompleteOverlay.classList.add('hide');
+      setTimeout(()=>{ stageCompleteOverlay.style.display = 'none'; }, 600);
+    });
+  </script>
+</body>
+</html>
