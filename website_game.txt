@@ -110,7 +110,6 @@
     /* Styles for new Game Section */
     #game {
       padding: 4rem 2rem 6rem 2rem;
-      background: #111;
       color: #ece7db;
       font-family: 'Inter', Arial, sans-serif;
     }
@@ -165,7 +164,6 @@
       border: 2px solid #1ada93;
       margin: 0 auto 3rem auto;
       max-width: 420px;
-      background: #222;
     }
     #game #splash h1 {
       font-size: 2.5rem;
@@ -973,7 +971,7 @@
         link.click();
         document.body.removeChild(link);
         alert("Badge image downloaded. When you write your tweet, attach the badge image!");
-        const tweetText = encodeURIComponent("I just won my Rialo OG Badge by completing the Rialo Flow Puzzle! Get yours now!");
+        const tweetText = encodeURIComponent("I just won my Rialo OG Badge by completing the Rialo Flow Puzzle! Get yours now! https://web3xjoker.github.io/Rialo-Game/#game ");
         const tweetUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
         window.open(tweetUrl, '_blank', 'width=550,height=420');
       });
