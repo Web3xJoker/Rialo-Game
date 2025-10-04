@@ -318,13 +318,25 @@
     #next-stage-btn:hover {
       background: #ede8e0;
     }
+
+@keyframes epicGlow {
+  0% { box-shadow: 0 0 10px 5px gold; transform: scale(0.8); opacity: 0; }
+  50% { box-shadow: 0 0 30px 15px gold; transform: scale(1.1); opacity: 1; }
+  100% { box-shadow: 0 0 40px 20px gold; transform: scale(1); opacity: 1; }
+}
+
+#og-badge.show {
+  animation: epicGlow 1.2s ease forwards;
+  display: block !important;
+}
+
   </style>
 </head>
 <body>
   <!-- Splash Screen -->
   <div id="splash">
     <h1>Rialo Puzzle Game</h1>
-    <p>Complete the 3 stages to win the Rialo OG Badge</p>
+    <p>Complete the puzzle to win the Rialo OG Badge</p>
     <button id="play-button">Play</button>
   </div>
 
@@ -384,8 +396,16 @@
 
   <!-- Stage completion overlay -->
   <div id="stage-complete-overlay">
-    <h1>Stage 1 Completed!</h1>
-    <button id="next-stage-btn">Next Stage &rarr;</button>
+    <h1>Puzzle Completed!</h1>
+  <button id="get-badge-btn">Get OG Badge</button>
+
+  <!-- Badge image, hidden initially -->
+  <img id="og-badge" src="OG_Badge.png" alt="Rialo OG Badge" style="display:none; width:200px; margin-top: 30px; border-radius: 20px; box-shadow: 0 0 40px 12px gold;">
+  
+  <!-- Share button, hidden initially -->
+  <button id="share-x-btn" style="display:none; margin-top: 24px; padding: 16px 48px; font-size: 1.3em; font-weight: 700; border-radius: 12px; background: #1da1f2; color: white; border: none; cursor: pointer;">
+    Share on X
+  </button>
   </div>
 
   <script>
@@ -473,12 +493,27 @@
       });
     });
 
-    nextStageBtn.addEventListener('click', () => {
-      alert('Next stage coming soon!');
-      stageCompleteOverlay.classList.remove('show');
-      stageCompleteOverlay.classList.add('hide');
-      setTimeout(()=>{ stageCompleteOverlay.style.display = 'none'; }, 600);
-    });
+const getBadgeBtn = document.getElementById('get-badge-btn');
+const ogBadge = document.getElementById('og-badge');
+const shareXBtn = document.getElementById('share-x-btn');
+
+getBadgeBtn.addEventListener('click', () => {
+  // Hide get badge button
+  getBadgeBtn.style.display = 'none';
+  // Show badge with animation
+  ogBadge.classList.add('show');
+  // Show share button after animation completes (1.2s)
+  setTimeout(() => {
+    shareXBtn.style.display = 'inline-block';
+  }, 1200);
+});
+
+shareXBtn.addEventListener('click', () => {
+  const tweetText = encodeURIComponent("I just won my Rialo OG Badge...");
+  const tweetUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
+  window.open(tweetUrl, '_blank', 'width=550,height=420');
+});
+
   </script>
 </body>
 </html>
