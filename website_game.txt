@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+  <link rel="icon" type="image/png" href="fevicon.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WTF is Rialo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  <style>
+    * {
+      transition: all 0.4s ease-in-out;
+    }
+    #stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      background: black;
+      display: block;
+    }
+    #chatbot {
+      width: 300px;
+      height: 400px;
+      background: #111;
+      border: 2px solid #244461;
+      border-radius: 12px;
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+    #chatbot-header {
+      background: #244461;
+      color: #fff;
+      padding: 8px;
+      font-weight: bold;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #chatbot-header img {
+      height: 24px;
+      width: 24px;
+      border-radius: 9999px;
+    }
+    #chatbot-messages {
+      flex: 1;
+      padding: 8px;
+      overflow-y: auto;
+      font-size: 14px;
+      color: white;
+    }
+    #chatbot-input {
+      display: flex;
+      border-top: 1px solid #333;
+    }
+    #chatbot-input input {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: #222;
+      color: white;
+      outline: none;
+    }
+    #chatbot-input button {
+      background: #244461;
+      color: #fff;
+      padding: 8px 12px;
+      border: none;
+      cursor: pointer;
+    }
+    #chatbot-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 16px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease, background 0.3s ease;
+      z-index: 100;
+    }
+    #chatbot-btn:hover {
+      transform: scale(1.1) rotate(5deg);
+    }
+    #chatbot-messages .user-message {
+      background-color: #90cdf4;
+      color: black;
+      padding: 6px 10px;
+      border-radius: 8px;
+      margin: 4px 0;
+      max-width: 80%;
+      align-self: flex-end;
+    }
+    /* Add smooth scroll */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Styles for new Game Section */
+    #game {
+      padding: 4rem 2rem 6rem 2rem;
+      background: #111;
+      color: #ece7db;
+      font-family: 'Inter', Arial, sans-serif;
+    }
+
+    #game * {
+      transition: none; /* disable overriding global transition to prevent UI lag during drag */
+    }
+
+    #game #splash, 
+    #game #puzzle, 
+    #game #stage-complete-overlay {
+      transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1), visibility 0.5s;
+      opacity: 1;
+      transform: scale(1);
+      visibility: visible;
+      position: relative;
+      width: 100%;
+      height: auto;
+      box-sizing: border-box;
+    }
+    #game #splash.hide, 
+    #game #puzzle.hide, 
+    #game #stage-complete-overlay.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: scale(0.98);
+      height: 0;
+      overflow: hidden;
+    }
+    #game #puzzle, 
+    #game #stage-complete-overlay {
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.98);
+      height: 0;
+      overflow: hidden;
+    }
+    #game #puzzle.show, 
+    #game #stage-complete-overlay.show {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+      height: auto;
+      overflow: visible;
+    }
+
+    #game #splash {
+      padding: 60px 28px;
+      text-align: center;
+      border-radius: 12px;
+      border: 2px solid #1ada93;
+      margin: 0 auto 3rem auto;
+      max-width: 420px;
+      background: #222;
+    }
+    #game #splash h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      font-weight: 900;
+    }
+    #game #splash p {
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+    #game #play-button {
+      background: #1ada93;
+      border: none;
+      padding: 12px 40px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #111;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 6px 15px #1ada9399;
+      transition: background 0.3s, box-shadow 0.3s, transform 0.22s cubic-bezier(0.4,0,0.2,1);
+    }
+    #game #play-button:active {
+      transform: scale(0.96);
+    }
+
+    #game #puzzle {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding-bottom: 40px;
+    }
+    #game .puzzle-title {
+      font-size: 2rem;
+      font-weight: 900;
+      text-align: center;
+      margin: 36px 0 16px 0;
+    }
+    #game .puzzle-desc {
+      color: #ccc;
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 1.15rem;
+    }
+    #game .center-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+    #game .draggable-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+    #game .draggable-step {
+      background: #23292d;
+      color: #ece7db;
+      border-radius: 12px;
+      border: 2px solid #ffffff;
+      width: 140px;
+      min-height: 48px;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      cursor: grab;
+      user-select: none;
+      box-shadow: 0 2px 4px #0002;
+      transition: box-shadow 0.23s, transform 0.23s;
+    }
+    #game .draggable-step.dragging {
+      opacity: 0.7;
+      box-shadow: 0 8px 32px #FFD700aa, 0 2px 12px #0006;
+      border: 2px solid #ffffff;
+      transform: scale(1.10);
+      z-index: 1000;
+    }
+    #game .main-flow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 100%;
+    }
+    #game .protocol-row {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      max-width: 1000px;
+      margin: 0 auto 18px auto;
+      z-index: 3;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    #game .protocol-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 100px;
+    }
+    #game .protocol-box img {
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      background: #222;
+      border: 2px solid #ffffff;
+      margin-bottom: 8px;
+    }
+    #game .protocol-label {
+      color: #ffffff;
+      font-size: 1rem;
+      text-align: center;
+    }
+    #game .protocol-box.intermediate {
+      min-width: 130px;
+      margin-left: 6px;
+      margin-right: 6px;
+    }
+    #game .intermediate-box-inner {
+      width: 70px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      border: 2px dashed #ffffff;
+      background: #181c22;
+      margin-bottom: 8px;
+      color: #ffffff;
+      font-size: 1.3em;
+      position: relative;
+    }
+    #game .step-drop-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      max-width: 1000px;
+      margin: 48px auto 34px auto;
+      z-index: 2;
+    }
+    #game .step-drop {
+      position: relative;
+      width: 140px;
+      height: 54px;
+      background: #161c20;
+      border: 2px solid #39404a;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 1rem;
+      transition: border 0.2s;
+      z-index: 3;
+    }
+    #game .step-drop.filled {
+      border: 2px solid #39404a;
+      background: #222;
+      color: #39404a;
+    }
+    #game .drop-number {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3em;
+      font-weight: 700;
+      color: rgba(187, 247, 208, 0.15);
+      pointer-events: none;
+      user-select: none;
+      transition: opacity 0.3s ease;
+      z-index: 1;
+    }
+    #game .step-drop.filled .drop-number {
+      opacity: 0;
+      visibility: hidden;
+    }
+    #game #hint {
+      width: 100%;
+      padding: 12px 0;
+      text-align: center;
+      font-size: 1em;
+      color: #0af0e4;
+      background: #111;
+      border-top: 1px solid #39404a;
+      user-select: none;
+      margin-top: 24px;
+      opacity: 1;
+      transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+    #game #hint.hide { opacity: 0; }
+    #game #hint a {
+      color: #0af0e4;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+    #game #stage-complete-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #111;
+      color: #ece7db;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      font-family: 'Inter', Arial, sans-serif;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: scale(0.97);
+      transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1), visibility 0.5s;
+    }
+    #game #stage-complete-overlay.show {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+    #game #stage-complete-overlay h1 {
+      font-size: 4em;
+      font-weight: 900;
+      margin: 0 0 40px 0;
+      color: #ece7db;
+      text-shadow: 0 0 44px #FFD700, 0 6px 32px #FFD70044, 0 0 0 #ece7db;
+      letter-spacing: 2px;
+    }
+    #game #get-badge-btn {
+      background: #ece7db;
+      color: #222;
+      padding: 22px 58px;
+      font-size: 1.4em;
+      font-weight: 700;
+      border-radius: 20px;
+      box-shadow: 0 0 32px 8px #FFD700, 0 2px 10px #0006;
+      margin-top: 28px;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.4s, box-shadow 0.3s, transform 0.22s cubic-bezier(0.4,0,0.2,1);
+    }
+    #game #get-badge-btn:active {
+      transform: scale(0.96);
+    }
+    #game #get-badge-btn:hover {
+      background: #ede8e0;
+    }
+    @keyframes epicGlow {
+      0% { box-shadow: 0 0 5px 2.5px gold; transform: scale(0.8); opacity: 0; }
+      50% { box-shadow: 0 0 15px 7px gold; transform: scale(1.1); opacity: 1; }
+      100% { box-shadow: 0 0 22px 8px gold; transform: scale(1); opacity: 1; }
+    }
+    #game #og-badge.show {
+      animation: epicGlow 1.2s ease forwards;
+      display: block !important;
+    }
+    #game #share-x-btn {
+      background: #fff;
+      color: #111;
+      text-align: center;
+      font-weight: 700;
+      border-radius: 12px;
+      padding: 20px 52px;
+      font-size: 1.4em;
+      border: none;
+      box-shadow: 0 0 8px 2px #bbb4;
+      cursor: pointer;
+      margin-top: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #game #share-x-btn:active {
+      transform: scale(0.96);
+    }
+    #game #share-x-btn:hover {
+      background: #f6f6f6;
+    }
+    #game #back-home-btn {
+      background: #ece7db;
+      color: #232323;
+      font-weight: 600;
+      border-radius: 12px;
+      padding: 16px 44px;
+      font-size: 1.1em;
+      border: none;
+      box-shadow: 0 0 8px 2px #bbb5;
+      cursor: pointer;
+      margin-top: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.22s, color 0.18s, transform 0.18s;
+    }
+    #game #back-home-btn:active {
+      transform: scale(0.97);
+    }
+    #game #back-home-btn:hover {
+      background: #dad7ce;
+    }
+  </style>
+</head>
+<body class="bg-black text-white font-sans">
+
+  <!-- Background Stars -->
+  <canvas id="stars"></canvas>
+
+  <!-- Navbar -->
+<header class="flex items-center px-8 py-4 fixed w-full top-0 bg-black/60 backdrop-blur-lg z-50">
+  <!-- Left: Logo -->
+  <a href="#wtf" id="logo-link" class="flex items-center space-x-3 flex-shrink-0 cursor-pointer">
+    <img src="Rialo-logo.png" alt="Rialo Logo" class="h-8 w-8" />
+    <span class="font-bold text-xl">Rialo</span>
+  </a>
+
+  <!-- Middle: Nav -->
+  <nav class="hidden md:flex flex-1 justify-center space-x-10">
+    <a href="#wtf" class="hover:text-green-400">WTF is Rialo</a>
+    <a href="#goal" class="hover:text-green-400">The Goal</a>
+    <a href="#funding" class="hover:text-green-400">Funding</a>
+    <a href="#ecosystem" class="hover:text-green-400">Ecosystem</a>
+    <a href="#game" class="hover:text-green-400">Game</a>
+    <a href="#explore" class="hover:text-green-400">Explore</a>
+  </nav>
+  <!-- Right: Call to Action -->
+  <a
+    href="https://www.rialo.io/"
+    target="_blank"
+    class="ml-6 px-4 py-2 bg-green-200 text-black font-semibold rounded-md shadow transition hover:bg-green-300"
+    style="text-decoration: none;"
+  >Visit Rialo</a>
+</header>
+
+  <!-- Hero Section -->
+  <section id="wtf" class="h-screen flex flex-col justify-center items-center text-center px-6">
+    <h1 class="text-5xl md:text-7xl font-bold mb-6" data-aos="fade-up">WTF is Rialo?</h1>
+    <p class="text-xl md:text-2xl text-gray-400 max-w-2xl" data-aos="fade-up" data-aos-delay="300">
+      Rialo isn’t a layer one. It is a next-generation blockchain designed to seamlessly bridge Web2 and Web3 by solving real-world problems that existing chains have ignored for years.
+    </p>
+  </section>
+
+  <!-- The Goal Section -->
+  <section id="goal" class="py-24 px-8"> 
+    <h1  class="text-6xl font-extrabold text-center mb-12 section-heading"  data-aos="fade-left">  The Goal        <!-- Replace for each heading --></h1>
+
+    <div class="max-w-4xl mx-auto mt-6 space-y-4 text-xl text-gray-400 text-center">
+      <p>Rialo removes all the daily crypto pain—no more clunky wallets, seed phrases, or confusing interfaces.</p>
+      <p>It blends Web3 into the apps you already use, so blockchain just works in your everyday life.</p>
+      <p>Enjoy all the benefits - speed, security, and ownership; with zero hassle or friction.</p>
+    </div>
+
+    <div class="flex justify-center mt-10">
+      <img src="The_Goal.png" alt="Goal Illustration" class="rounded-xl shadow-xl w-full max-w-xl object-cover" />
+    </div>
+  </section>
+
+  <!-- Funding Section -->
+  <section id="funding" class="py-24 px-8"> 
+    <h1 class="text-6xl font-extrabold text-center mb-12 section-heading" data-aos="fade-left">Funding</h1>
+    <p class="text-xl text-gray-400 max-w-4xl mx-auto text-center">
+      Rialo recently announced a $20M Subzerolabs initial raise led by Pantera Capital to build the chain.
+      It is also to be noted that Rialo is being backed by other blockchain pioneers including Variant, Hashed, Fabric Ventures, Coinbase Ventures, Mirana, Mysten Labs, Susquehanna, Edge Ventures, Flowdesk and others.
+    </p>
+    
+    <div class="flex justify-center mt-10">
+      <img src="Rialo_Funding.png" alt="Goal Illustration" class="rounded-xl shadow-xl w-full max-w-xl object-cover" />
+    </div>
+  </section>
+
+  <!-- Ecosystem Section -->
+  <section id="ecosystem" class="py-24 px-8">
+    <h1 class="text-6xl font-extrabold text-center mb-12 section-heading" data-aos="fade-right">Ecosystem</h1>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8 place-items-center">
+      <img src="Meta_logo.png" class="h-12 grayscale hover:grayscale-0 transition" alt="Meta" />
+      <img src="Netflix.png" class="h-12 grayscale hover:grayscale-0 transition" alt="Netflix" />
+      <img src="Google.png" class="h-12 grayscale hover:grayscale-0 transition" alt="Google" />
+      <img src="Apple.png" class="h-12 grayscale hover:grayscale-0 transition" alt="Apple" />
+      <img src="Microsoft-Logo-White.jpg" class="h-14 grayscale hover:grayscale-0 transition" alt="Microsoft" />
+      <img src="Amazon.png" class="h-12 grayscale hover:grayscale-0 transition" alt="Amazon" />
+
+      <img src="Uber.png" class="h-12 grayscale hover:grayscale-0 transition" alt="Uber" />
+      <img src="Robinhood.png" class="h-12 grayscale hover:grayscale-0 transition" alt="Robinhood" />
+      <img src="vmware.png" class="h-10 grayscale hover:grayscale-0 transition" alt="VMware" />
+      <img src="MystenLabs.jpg" class="h-18 grayscale hover:grayscale-0 transition" alt="Mysten Labs" />
+      <img src="Pantera.png" class="h-14 grayscale hover:grayscale-0 transition" alt="Pantera" />
+      <img src="Solana.png" class="h-8 grayscale hover:grayscale-0 transition" alt="Solana" />
+
+      <img src="MagicEden.jpeg" class="h-18 grayscale hover:grayscale-0 transition" alt="Magic Eden" />
+      <img src="EigenLayer.png" class="h-12 grayscale hover:grayscale-0 transition" alt="Eigen Layer" />
+      <img src="Near.png" class="h-12 grayscale hover:grayscale-0 transition" alt="Near" />
+      <img src="Linera.png" class="h-14 grayscale hover:grayscale-0 transition" alt="Linera" />
+      <img src="Parity.png" class="h-18 grayscale hover:grayscale-0 transition" alt="Parity" />
+      <img src="Diem.png" class="h-8 grayscale hover:grayscale-0 transition" alt="Diem" />
+
+      <img src="Citadel.jpeg" class="h-12 grayscale hover:grayscale-0 transition" alt="Citadel" />
+      <img src="Chainlink.png" class="h-12 grayscale hover:grayscale-0 transition" alt="Chainlink" />
+      <img src="Moonpay.png" class="h-18 grayscale hover:grayscale-0 transition" alt="MoonPay" />
+      <img src="RedHat.png" class="h-14 grayscale hover:grayscale-0 transition" alt="RedHat" />
+      <img src="Gensyn.png" class="h-12 grayscale hover:grayscale-0 transition" alt="Gensyn" />
+      <img src="zksync.png" class="h-10 grayscale hover:grayscale-0 transition" alt="zkSync" />
+    </div>
+  </section>
+
+  <!-- New Game Section Integrated -->
+  <section id="game" class="">
+    <!-- Splash Screen -->
+    <div id="splash">
+      <h1>Rialo Puzzle Game</h1>
+      <p>Complete the puzzle to win the Rialo OG Badge</p>
+      <button id="play-button">Play</button>
+    </div>
+
+    <!-- Puzzle Container -->
+    <div id="puzzle" class="puzzle-container hide">
+      <div class="puzzle-title">Rialo Protocol Flow Puzzle</div>
+      <div class="puzzle-desc">
+        Match each protocol step to the flow structure.
+      </div>
+      <div class="center-area">
+        <div class="draggable-row">
+          <div class="draggable-step" draggable="true" data-step="1">Contract Minted</div>
+          <div class="draggable-step" draggable="true" data-step="3">Task Result to Contract Address</div>
+          <div class="draggable-step" draggable="true" data-step="2">Send Contract Address</div>
+          <div class="draggable-step" draggable="true" data-step="4">Task Result and Contract Address</div>
+          <div class="draggable-step" draggable="true" data-step="5">Task Result to Contract Address</div>
+          <div class="draggable-step" draggable="true" data-step="6">Funds Released</div>
+          <div class="draggable-step" draggable="true" data-step="7">Task Result</div>
+        </div>
+        <div class="main-flow">
+          <div class="protocol-row">
+            <div class="protocol-box">
+              <img src="customer.png" alt="Customer" />
+              <div class="protocol-label">Customer</div>
+            </div>
+            <div class="protocol-box">
+              <img src="agent.png" alt="Agent" />
+              <div class="protocol-label">Agent</div>
+            </div>
+            <div class="protocol-box intermediate">
+              <div class="step-drop" id="drop2" data-accept="2"><span class="drop-number">2</span></div>
+            </div>
+            <div class="protocol-box">
+              <img src="server.png" alt="Server" />
+              <div class="protocol-label">Server</div>
+            </div>
+            <div class="protocol-box">
+              <img src="judge.png" alt="Judge" />
+              <div class="protocol-label">Judge</div>
+            </div>
+          </div>
+          <div class="step-drop-row">
+            <div class="step-drop" id="drop1" data-accept="1"><span class="drop-number">1</span></div>
+            <div class="step-drop" id="drop3" data-accept="7"><span class="drop-number">7</span></div>
+            <div class="step-drop" id="drop4" data-accept="5"><span class="drop-number">3</span></div>
+            <div class="step-drop" id="drop5" data-accept="6"><span class="drop-number">6</span></div>
+            <div class="step-drop" id="drop6" data-accept="4"><span class="drop-number">4</span></div>
+            <div class="step-drop" id="drop7" data-accept="3"><span class="drop-number">5</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="hint" style="display:none;">
+      Hint : Refer to Rialo's <a href="https://www.rialo.io/posts/making-the-agent-economy-simple-and-safe-with-rialo" target="_blank" rel="noopener noreferrer">SCALE</a>
+    </div>
+
+    <!-- Stage completion overlay -->
+    <div id="stage-complete-overlay" class="hide">
+      <h1>Puzzle Completed!</h1>
+      <button id="get-badge-btn">Get OG Badge</button>
+      <img id="og-badge" src="OG_Badge.png" alt="Rialo OG Badge" style="display:none; width:200px; margin-top: 30px; border-radius: 20px; box-shadow: 0 0 40px 12px gold;">
+      <button id="share-x-btn" style="display:none;">Share on X</button>
+      <button id="back-home-btn" style="display:none;">Back to Home</button>
+    </div>
+  </section>
+
+  <!-- Explore Section -->
+  <section id="explore" class="py-24 px-8"> 
+    <h1 class="text-6xl font-extrabold text-center mb-12 section-heading" data-aos="fade-left">Explore</h1>
+    <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+      <!-- Card 1 -->
+      <div class="border border-gray-700 rounded-xl p-6 flex flex-col justify-between hover:shadow-lg hover:shadow-green-500/20 transition">
+        <div>
+          <h3 class="text-2xl font-semibold mb-4">Making the Agent Economy Simple and Safe with Rialo</h3>
+          <p class="text-gray-400 mb-6">
+            At Subzero Labs, we believe that the AI systems that will have the greatest impact on humanity will be decentralized.
+          </p>
+        </div>
+        <a href="https://www.rialo.io/posts/making-the-agent-economy-simple-and-safe-with-rialo" target="_blank" class="px-4 py-2 bg-green-200 text-black rounded-md font-medium hover:bg-green-300 transition w-max">
+          READ MORE
+        </a>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="border border-gray-700 rounded-xl p-6 flex flex-col justify-between hover:shadow-lg hover:shadow-green-500/20 transition">
+        <div>
+          <h3 class="text-2xl font-semibold mb-4">Rialo Makes Real World Assets Real</h3>
+          <p class="text-gray-400 mb-6">
+            Real-world assets (RWAs) are one of blockchain’s biggest promises and biggest letdowns. Billions in tokenized treasuries, real estate, and credit already exist, yet they still behave like slow, clunky replicas of their off-chain counterparts.
+          </p>
+        </div>
+        <a href="https://www.rialo.io/posts/rialo-makes-real-world-assets-real" target="_blank" class="px-4 py-2 bg-green-200 text-black rounded-md font-medium hover:bg-green-300 transition w-max">
+          READ MORE
+        </a>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="border border-gray-700 rounded-xl p-6 flex flex-col justify-between hover:shadow-lg hover:shadow-green-500/20 transition">
+        <div>
+          <h3 class="text-2xl font-semibold mb-4">Introducing Rialo: A Blockchain Built for the Real World</h3>
+          <p class="text-gray-400 mb-6">
+            Bitcoin created digital scarcity. Ethereum introduced programmable trust. Fast chains followed, all racing to be faster on paper. And yet, most new users still quit near the starting line. Why?
+          </p>
+        </div>
+        <a href="https://www.rialo.io/posts/introducing-rialo" target="_blank" class="px-4 py-2 bg-green-200 text-black rounded-md font-medium hover:bg-green-300 transition w-max">
+          READ MORE
+        </a>
+      </div>   
+    </div>
+  </section>
+
+  <section class="py-24 px-8 flex justify-center items-center">
+    <div class="border border-blue-900 rounded-xl p-6 mt-12 max-w-xl mx-auto bg-black/60">
+      <h2 class="text-2xl font-semibold mb-4 text-center">Explore the official handles of Rialo</h2>
+      <div class="flex items-center mb-3 gap-3">
+        <img src="Rialo-logo.png" alt="Website" class="h-6 w-6 object-contain"/>
+        <a href="https://rialo.io/" target="_blank" class="text-green-200 underline hover:text-green-400">WEBSITE</a>
+      </div>
+      <div class="flex items-center mb-3 gap-3">
+        <img src="X_logo.jpg" alt="X Twitter" class="h-6 w-6 object-contain"/>
+        <a href="https://x.com/RialoHQ" target="_blank" class="text-green-200 underline hover:text-green-400">X (TWITTER)</a>
+      </div>
+      <div class="flex items-center mb-3 gap-3">
+        <img src="Discord-Logo.png" alt="Discord" class="h-6 w-6 object-contain"/>
+        <a href="https://discord.gg/RialoProtocol" target="_blank" class="text-green-200 underline hover:text-green-400">DISCORD</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <img src="telegram_logo.png" alt="Telegram" class="h-6 w-6 object-contain"/>
+        <a href="https://t.me/RialoProtocol" target="_blank" class="text-green-200 underline hover:text-green-400">TELEGRAM</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-6 text-center text-gray-500">
+    <div class="space-y-1">
+      <div>© 2025 Rialo Build.</div>
+      <div>This is an educational site, independently built by Web3 Joker.</div>
+    </div>
+  </footer>
+
+  <!-- Chatbot -->
+  <div id="chatbot" style="display:none; flex-direction: column; width: 300px; height: 400px; background: #111; border-radius: 12px; position: fixed; bottom: 90px; right: 20px; overflow: hidden; opacity: 0; transform: scale(0.8); transition: all 0.3s ease; z-index: 100;">
+    <div id="chatbot-header" class="flex items-center space-x-2" style="padding:8px; font-weight:bold;">
+      <img src="Web3Joker.png" alt="Web3 Joker Logo" class="h-6 w-6 rounded-full" />
+      <span>Web3 Joker</span>
+    </div>
+    <div id="chatbot-messages" style="flex:1; padding: 8px; overflow-y: auto; font-size: 14px; color: white;"></div>
+    <div id="chatbot-input" style="display:flex; border-top:1px solid #333;">
+      <input type="text" id="user-input" placeholder="Type a message..." style="flex:1; padding:8px; border:none; background:#222; color:white; outline:none;" />
+      <button onclick="sendMessage()" style="padding:8px 12px; border:none; cursor:pointer;">Send</button>
+    </div>
+  </div>
+
+  <div id="chatbot-btn" style="position: fixed; bottom: 20px; right: 20px; z-index: 100; cursor: pointer;">
+    <img src="Web3Joker.png" alt="Chatbot" style="height:64px; width:64px; border-radius:50%; border:5px solid #244461; box-shadow:0 4px 10px rgba(0,0,0,0.3);" />
+  </div>
+
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    AOS.init({ duration: 800, easing: 'ease-in-out', once: true });
+
+    const canvas = document.getElementById("stars");
+    const ctx = canvas.getContext("2d");
+
+    let stars = [];
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      stars = Array.from({length: 150}, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1.5,
+        speed: Math.random() * 0.5 + 0.2
+      }));
+    }
+    function animateStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'white';
+      stars.forEach(star => {
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fill();
+        star.y += star.speed;
+        if (star.y > canvas.height) star.y = 0;
+      });
+      requestAnimationFrame(animateStars);
+    }
+    window.addEventListener("resize", resize);
+    resize();
+    animateStars();
+
+    const chatbotBtn = document.getElementById("chatbot-btn");
+    const chatbot = document.getElementById("chatbot");
+    const messages = document.getElementById("chatbot-messages");
+    const input = document.getElementById("user-input");
+    
+    input.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+
+    chatbotBtn.addEventListener("click", toggleChatbot);
+
+    function toggleChatbot() {
+      if (chatbot.style.display === "flex") {
+        chatbot.style.opacity = 0;
+        chatbot.style.transform = "scale(0.8)";
+        setTimeout(() => {
+          chatbot.style.display = "none";
+        }, 300);
+      } else {
+        chatbot.style.display = "flex";
+        setTimeout(() => {
+          chatbot.style.opacity = 1;
+          chatbot.style.transform = "scale(1)";
+          input.focus();
+        }, 10);
+      }
+    }
+
+    async function fetchAIReply(userMsg) {
+      try {
+        const res = await fetch('/api/gemini.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userMsg }),
+        });
+        if (!res.ok) throw new Error('Network error');
+        const data = await res.json();
+        return data.answer;
+      } catch {
+        return "Sorry, I’m having trouble getting back to you right now. You can approach me directly on X at @Web3xJoker";
+      }
+    }
+
+    async function sendMessage() {
+      const userMsg = input.value.trim();
+      if (!userMsg) return;
+
+      appendMessage("", userMsg, "right", "#e5e5e5", "black");
+      input.value = "";
+
+      appendMessage("", "Typing...", "left", "#d1abb5", "black");
+      messages.lastChild.remove();
+
+      const botReply = await fetchAIReply(userMsg);
+      appendMessage("", botReply, "left", "#d1abb5", "black");
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function linkify(text) {
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      return text.replace(urlRegex, url => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+      });
+    }
+
+    function appendMessage(sender, text, align, bgColor, color) {
+      const msgDiv = document.createElement("div");
+      msgDiv.style.textAlign = align;
+      msgDiv.style.marginBottom = "8px";
+
+      const span = document.createElement("span");
+      span.style.backgroundColor = bgColor;
+      span.style.color = color;
+      span.style.padding = "8px 12px";
+      span.style.borderRadius = "12px";
+      span.style.display = "inline-block";
+
+      span.innerHTML = linkify(text);
+
+      msgDiv.appendChild(span);
+      messages.appendChild(msgDiv);
+    }
+  </script>
+
+  <!-- Game Script -->
+  <script>
+    (function() {
+      const gameRoot = document.getElementById('game');
+
+      const splash = gameRoot.querySelector('#splash');
+      const puzzle = gameRoot.querySelector('#puzzle');
+      const hint = gameRoot.querySelector('#hint');
+      const stageCompleteOverlay = gameRoot.querySelector('#stage-complete-overlay');
+      const playButton = gameRoot.querySelector('#play-button');
+      const drags = gameRoot.querySelectorAll('.draggable-step');
+      const drops = gameRoot.querySelectorAll('.step-drop');
+      const getBadgeBtn = gameRoot.querySelector('#get-badge-btn');
+      const ogBadge = gameRoot.querySelector('#og-badge');
+      const shareXBtn = gameRoot.querySelector('#share-x-btn');
+      const backHomeBtn = gameRoot.querySelector('#back-home-btn');
+
+      function shuffleDraggables() {
+        const container = gameRoot.querySelector('.draggable-row');
+        const items = Array.from(container.children);
+        for (let i = items.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [items[i], items[j]] = [items[j], items[i]];
+        }
+        items.forEach(item => container.appendChild(item));
+      }
+
+      // Initial states
+      splash.classList.remove("hide");
+      puzzle.classList.remove("show");
+      puzzle.classList.add("hide");
+      stageCompleteOverlay.classList.remove("show");
+      stageCompleteOverlay.classList.add("hide");
+      hint.style.display = "none";
+
+      playButton.addEventListener('click', () => {
+        splash.classList.add('hide');
+        setTimeout(() => {
+          splash.style.display = "none";
+          puzzle.classList.add('show');
+          puzzle.classList.remove('hide');
+          hint.style.display = "block";
+        }, 700);
+        shuffleDraggables();
+      });
+
+      drags.forEach(d => {
+        d.addEventListener('dragstart', e => {
+          d.classList.add('dragging');
+          setTimeout(() => { d.style.visibility = "hidden"; }, 1);
+        });
+        d.addEventListener('dragend', e => {
+          d.classList.remove('dragging');
+          d.style.visibility = "";
+        });
+      });
+
+      function checkPuzzleComplete() {
+        return Array.from(drops).every(drop => {
+          if (!drop.querySelector('.draggable-step')) return false;
+          const drag = drop.querySelector('.draggable-step');
+          return drag.dataset.step === drop.dataset.accept;
+        });
+      }
+
+      drops.forEach(drop => {
+        drop.addEventListener('dragover', e => e.preventDefault());
+        drop.addEventListener('drop', e => {
+          e.preventDefault();
+          const drag = gameRoot.querySelector('.draggable-step.dragging') || Array.from(drags).find(d => d.style.visibility === "hidden");
+          if (drag && drop.dataset.accept === drag.dataset.step && !drop.querySelector('.draggable-step')) {
+            drop.appendChild(drag);
+            drop.classList.add('filled');
+            drag.setAttribute('draggable', 'false');
+            drag.style.transition = "transform 0.36s cubic-bezier(0.4,0,0.2,1)";
+            drag.style.transform = "scale(1)";
+            setTimeout(()=>{
+              drag.style.transition = ""; 
+              drag.style.transform = "";
+            }, 360);
+
+            if (checkPuzzleComplete()) {
+              setTimeout(() => {
+                stageCompleteOverlay.classList.add('show');
+                stageCompleteOverlay.classList.remove('hide');
+                stageCompleteOverlay.style.display = 'flex';
+              }, 400);
+            }
+          }
+        });
+      });
+
+      getBadgeBtn.addEventListener('click', () => {
+        getBadgeBtn.style.display = 'none';
+        ogBadge.classList.add('show');
+        setTimeout(() => {
+          shareXBtn.style.display = 'inline-block';
+          backHomeBtn.style.display = 'inline-block';
+        }, 1200);
+      });
+
+      shareXBtn.addEventListener('click', () => {
+        const img = ogBadge;
+        const link = document.createElement('a');
+        link.href = img.src;
+        link.download = 'rialo-og-badge.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        alert("Badge image downloaded. When you write your tweet, attach the badge image!");
+        const tweetText = encodeURIComponent("I just won my Rialo OG Badge by completing the Rialo Flow Puzzle! Get yours now!");
+        const tweetUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
+        window.open(tweetUrl, '_blank', 'width=550,height=420');
+      });
+
+      backHomeBtn.addEventListener('click', () => {
+        stageCompleteOverlay.classList.remove('show');
+        stageCompleteOverlay.classList.add('hide');
+        puzzle.classList.remove('show');
+        puzzle.classList.add('hide');
+        splash.style.display = "";
+        splash.classList.remove('hide');
+        ogBadge.classList.remove('show');
+        shareXBtn.style.display = 'none';
+        backHomeBtn.style.display = 'none';
+        getBadgeBtn.style.display = 'inline-block';
+      });
+    })();
+  </script>
+</body>
+</html>
