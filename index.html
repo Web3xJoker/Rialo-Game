@@ -1,4 +1,3 @@
-<!-- Rialo Protocol Puzzle: Level 1 Block Assembly -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,151 +12,197 @@
       min-height: 100vh;
     }
     .puzzle-container {
-      width: 100vw;
+      max-width: 1000px;
+      margin: 0 auto;
       min-height: 100vh;
       display: flex;
       align-items: center;
-      justify-content: center;
       flex-direction: column;
+      position: relative;
     }
     .puzzle-title {
-      font-size: 2.5em;
-      margin-top: 48px;
+      font-size: 2.3em;
+      margin-top: 32px;
       color: #fff;
       text-align: center;
     }
     .puzzle-desc {
-      margin: 0;
       color: #bbf7d0;
       text-align: center;
-      margin-bottom: 32px;
+      margin-bottom: 18px;
     }
-    .block-zone {
+    .draggable-row {
+      display: flex;
+      justify-content: center;
+      margin: 35px 0 15px 0;
+      gap: 22px;
+    }
+    .draggable-step {
+      background: #23292d;
+      color: #bbf7d0;
+      border-radius: 14px;
+      border: 2px solid #39404a;
+      width: 140px;
+      min-height: 50px;
+      font-size: 1em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      margin: 6px 2px;
+      cursor: grab;
+      user-select: none;
+    }
+    .drop-zone-row {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 22px;
+      position: relative;
+      z-index: 2;
+    }
+    .step-drop {
+      width: 140px;
+      height: 54px;
+      background: #23292d;
+      border: 2px solid #39404a;
+      border-radius: 12px;
+      margin: 9px 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #bbb;
+      font-size:1em;
+      transition: border 0.2s;
+      position:relative;
+      z-index: 6;
+    }
+    .step-drop.filled {
+      border:2px solid #bbf7d0;
+      background: #222;
+      color: #1ada93;
+    }
+    .protocol-row {
       display: flex;
       justify-content: center;
       align-items: flex-end;
-      gap: 36px;
-      margin: 20px 0 32px 0;
-      min-height: 220px;
+      margin-top: 38px;
+      gap: 70px;
+      z-index: 4;
+      position:relative;
     }
-    .block-slot {
-      width: 110px;
-      height: 110px;
+    .protocol-box {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:5px;
+      min-width:90px;
+    }
+    .protocol-box img {
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
       background: #222;
       border: 2px solid #39404a;
-      border-radius: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 12px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.22);
-      position: relative;
-      transition: border 0.15s;
+      box-shadow:0 2px 8px #000b;
     }
-    .block-slot.filled {
-      border: 2px solid #bbf7d0;
-      background: #151c1a;
+    .protocol-label {
+      color:#bbf7d0;
+      font-size:1em;
+      text-align:center;
+      margin-top:6px;
     }
-    .draggable-block {
-      width: 90px;
-      height: 90px;
-      border-radius: 14px;
-      background: #151c1a;
-      border: 2px solid #444;
-      color: #bbf7d0;
-      font-weight: 600;
-      font-size: 1.12em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 8px;
-      cursor: grab;
-      user-select: none;
-      z-index: 501;
-      transition: box-shadow 0.2s, border 0.2s;
-    }
-    .draggable-block.dragging {
-      opacity: 0.7;
-      box-shadow: 0 8px 24px #bbf7d0aa;
-      border: 2px solid #bbf7d0;
-    }
-    .drop-correct {
-      animation: border-shine 0.7s linear;
-    }
-    @keyframes border-shine {
-      0% { border-color: #bbf7d0; }
-      100% { border-color: #76f7e1; }
-    }
-    #success-msg {
-      display: none;
-      margin-top: 32px;
-      font-size: 1.5em;
-      color: #bbf7d0;
-      animation: shine 1.8s linear;
-      background: #161919;
-      padding: 16px 28px;
-      border-radius: 12px;
-      border: 1.5px solid #bbf7d0;
-      box-shadow: 0 0 32px #bbf7d01a;
-    }
-    @keyframes shine {
-      0% { box-shadow: none; }
-      50% { box-shadow: 0 0 28px #bbf7d0; }
-      100% { box-shadow: 0 0 12px #bbf7d07a;}
+    /* SVG lines (placed absolutely behind rows) */
+    .svg-lines {
+      position:absolute;
+      left:0;
+      top:0;
+      pointer-events:none;
+      z-index:1;
     }
   </style>
 </head>
 <body>
   <div class="puzzle-container">
-    <div class="puzzle-title">Level 1: Block Assembly of SCALE (Simple Contracts for Agent Labor Execution)</div>
-    <div class="puzzle-desc">Drag each Rialo protocol component to its correct slot below.<br/>Where does each piece fit in the network?</div>
-    <div style="display:flex; justify-content:center; margin-bottom:28px;">
-      <!-- You may replace the words with <img> tags using the Rialo assets you provided -->
-      <div class="draggable-block" draggable="true" id="block1" data-solution="slot1"> <img src="agent.png" alt="Agent" style="width:64px; height:64px;" /></div>
-      <div class="draggable-block" draggable="true" id="block2" data-solution="slot2"> <img src="server.png" alt="Server" style="width:64px; height:64px;" /></div>
-      <div class="draggable-block" draggable="true" id="block3" data-solution="slot3"> <img src="judge.png" alt="Judge" style="width:64px; height:64px;" /></div>
-      <div class="draggable-block" draggable="true" id="block4" data-solution="slot4"> <img src="customer.png" alt="Customer" style="width:64px; height:64px;" /></div>
+    <div class="puzzle-title">Level 1: Rebuild the Rialo Protocol Flow</div>
+    <div class="puzzle-desc">Drag and match each protocol step to where it happens in the network. Reference below roles and the connection lines!</div>
+
+    <!-- Draggable protocol steps up top -->
+    <div class="draggable-row">
+      <div class="draggable-step" draggable="true" data-step="1">Contract Minted</div>
+      <div class="draggable-step" draggable="true" data-step="2">Send Contract Address</div>
+      <div class="draggable-step" draggable="true" data-step="3">Task Result to Contract Addr</div>
+      <div class="draggable-step" draggable="true" data-step="4">Task Result and Addr</div>
+      <div class="draggable-step" draggable="true" data-step="5">Task Result to Contract Addr</div>
+      <div class="draggable-step" draggable="true" data-step="6">Funds Released</div>
+      <div class="draggable-step" draggable="true" data-step="7">Task Result</div>
     </div>
-    <div class="block-zone">
-      <div class="block-slot" id="slot1"><img src="agent.png" alt="Agent" style="width:56px; height:56px; opacity:0.28;" /></div>
-      <div class="block-slot" id="slot2"><img src="server.png" alt="Server" style="width:56px; height:56px; opacity:0.28;" /></div>
-      <div class="block-slot" id="slot3"><img src="judge.png" alt="Judge" style="width:56px; height:56px; opacity:0.28;" /></div>
-      <div class="block-slot" id="slot4"><img src="customer.png" alt="Customer" style="width:56px; height:56px; opacity:0.28;" /></div>
+
+    <!-- Step 2 on main row, steps 1/3/4/5/6/7 below (use flex/grid for more precise layout as needed) -->
+    <div style="height: 55px;"></div>
+    <div class="drop-zone-row" style="justify-content:center;">
+      <div class="step-drop" id="drop2" data-accept="2"></div>
     </div>
-    <div id="success-msg">Block structure completed!<br> Rialo’s modular infrastructure empowers seamless, trust-minimized coordination.</div>
+
+    <div class="drop-zone-row">
+      <div class="step-drop" id="drop1" data-accept="1"></div>
+      <div class="step-drop" id="drop3" data-accept="3"></div>
+      <div class="step-drop" id="drop4" data-accept="4"></div>
+      <div class="step-drop" id="drop5" data-accept="5"></div>
+      <div class="step-drop" id="drop6" data-accept="6"></div>
+      <div class="step-drop" id="drop7" data-accept="7"></div>
+    </div>
+
+    <!-- SVG for connection lines between boxes (adjust coords as needed!) -->
+    <svg width="900" height="285" class="svg-lines">
+      <!-- Example static lines; adjust x/y to fit your drop zones and protocol-boxes visually -->
+      <!-- <line x1="120" y1="0" x2="120" y2="200" stroke="#bbf7d0" stroke-width="3"/> -->
+      <!-- Use more lines/paths based on diagram layout -->
+    </svg>
+
+    <!-- Fixed protocol roles row at the bottom -->
+    <div class="protocol-row">
+      <div class="protocol-box">
+        <img src="customer.png" alt="Customer"/>
+        <div class="protocol-label">Customer</div>
+      </div>
+      <div class="protocol-box">
+        <img src="agent.png" alt="Agent"/>
+        <div class="protocol-label">Agent</div>
+      </div>
+      <div class="protocol-box">
+        <img src="server.png" alt="Server"/>
+        <div class="protocol-label">Server</div>
+      </div>
+      <div class="protocol-box">
+        <img src="judge.png" alt="Judge"/>
+        <div class="protocol-label">Judge</div>
+      </div>
+    </div>
   </div>
   <script>
-    const blocks = document.querySelectorAll('.draggable-block');
-    const slots = document.querySelectorAll('.block-slot');
-    let filled = 0;
-
-    blocks.forEach(block => {
-      block.addEventListener('dragstart', e => {
-        block.classList.add('dragging');
-        setTimeout(() => { block.style.display = "none"; }, 1);
+    // Simple drag-n-drop pairing by data attributes
+    const drags = document.querySelectorAll('.draggable-step');
+    const drops = document.querySelectorAll('.step-drop');
+    drags.forEach(d => {
+      d.addEventListener('dragstart', e=>{
+        d.classList.add('dragging');
+        setTimeout(()=>{d.style.visibility="hidden";},1);
       });
-      block.addEventListener('dragend', e => {
-        block.classList.remove('dragging');
-        block.style.display = "";
+      d.addEventListener('dragend', e=>{
+        d.classList.remove('dragging');
+        d.style.visibility="";
       });
     });
-
-    slots.forEach(slot => {
-      slot.addEventListener('dragover', e => {
+    drops.forEach(drop => {
+      drop.addEventListener('dragover', e => e.preventDefault());
+      drop.addEventListener('drop', e=>{
         e.preventDefault();
-      });
-      slot.addEventListener('drop', e => {
-        e.preventDefault();
-        if (slot.classList.contains('filled')) return;
-        const block = document.querySelector('.dragging') || Array.from(blocks).find(b=>b.style.display==="none");
-        if (block && block.dataset.solution === slot.id) {
-          slot.innerHTML = '';
-          slot.appendChild(block);
-          slot.classList.add('filled','drop-correct');
-          block.setAttribute('draggable', false);
-          filled++;
-          setTimeout(()=>slot.classList.remove('drop-correct'), 600);
-          if (filled===4) document.getElementById('success-msg').style.display = 'block';
+        const drag = document.querySelector('.draggable-step.dragging') || Array.from(drags).find(d=>d.style.visibility==="hidden");
+        if (drag && drop.dataset.accept === drag.dataset.step && !drop.hasChildNodes()) {
+          drop.textContent = '';
+          drop.appendChild(drag);
+          drop.classList.add('filled');
+          drag.setAttribute('draggable','false');
         }
       });
     });
