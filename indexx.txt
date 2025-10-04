@@ -300,35 +300,66 @@
       text-shadow: 0 0 44px #FFD700, 0 6px 32px #FFD70044, 0 0 0 #ece7db;
       letter-spacing: 2px;
     }
-    #next-stage-btn {
-      background: #ece7db;
-      color: #222;
-      padding: 24px 64px;
-      font-size: 2em;
-      font-weight: 700;
-      border-radius: 20px;
-      box-shadow: 0 0 32px 8px #FFD700, 0 2px 12px #0006;
-      margin-top: 24px;
-      border: none;
-      transition: background 0.4s, box-shadow 0.3s, transform 0.22s cubic-bezier(0.4,0,0.2,1);
-    }
-    #next-stage-btn:active {
-      transform: scale(0.96);
-    }
-    #next-stage-btn:hover {
-      background: #ede8e0;
-    }
+
+
+#get-badge-btn {
+  background: #ece7db;
+  color: #222;
+  padding: 32px 90px;     /* increased padding for a larger button */
+  font-size: 2.3em;       /* larger text size */
+  font-weight: 700;
+  border-radius: 26px;    /* rounder corners for a bold look */
+  box-shadow: 0 0 48px 14px #FFD700, 0 2px 15px #0006;
+  margin-top: 36px;
+  border: none;
+  display: flex;          /* enables centering horizontally and vertically */
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.4s, box-shadow 0.3s, transform 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+#get-badge-btn:active {
+  transform: scale(0.96);
+}
+#get-badge-btn:hover {
+  background: #ede8e0;
+}
+
 
 @keyframes epicGlow {
-  0% { box-shadow: 0 0 10px 5px gold; transform: scale(0.8); opacity: 0; }
-  50% { box-shadow: 0 0 30px 15px gold; transform: scale(1.1); opacity: 1; }
-  100% { box-shadow: 0 0 40px 20px gold; transform: scale(1); opacity: 1; }
+  0% { box-shadow: 0 0 5px 2.5px gold; transform: scale(0.8); opacity: 0; }
+  50% { box-shadow: 0 0 15px 7px gold; transform: scale(1.1); opacity: 1; }
+  100% { box-shadow: 0 0 22px 8px gold; transform: scale(1); opacity: 1; }
 }
 
 #og-badge.show {
   animation: epicGlow 1.2s ease forwards;
   display: block !important;
 }
+
+#share-x-btn {
+  background: #fff;
+  color: #111;
+  text-align: center;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 20px 52px;
+  font-size: 1.4em;
+  border: none;
+  box-shadow: 0 0 8px 2px #bbb4;
+  cursor: pointer;
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#share-x-btn:active {
+  transform: scale(0.96);
+}
+#share-x-btn:hover {
+  background: #f6f6f6;
+}
+
 
   </style>
 </head>
@@ -403,9 +434,8 @@
   <img id="og-badge" src="OG_Badge.png" alt="Rialo OG Badge" style="display:none; width:200px; margin-top: 30px; border-radius: 20px; box-shadow: 0 0 40px 12px gold;">
   
   <!-- Share button, hidden initially -->
-  <button id="share-x-btn" style="display:none; margin-top: 24px; padding: 16px 48px; font-size: 1.3em; font-weight: 700; border-radius: 12px; background: #1da1f2; color: white; border: none; cursor: pointer;">
-    Share on X
-  </button>
+<button id="share-x-btn" style="display:none;">Share on X</button>
+
   </div>
 
   <script>
@@ -509,6 +539,19 @@ getBadgeBtn.addEventListener('click', () => {
 });
 
 shareXBtn.addEventListener('click', () => {
+  // Download badge image automatically for user's convenience
+  const img = ogBadge;
+  const link = document.createElement('a');
+  link.href = img.src;
+  link.download = 'rialo-og-badge.png';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  // Alert the user to attach the image in their X post
+  alert("Badge image downloaded. When you write your tweet, attach the badge image!");
+
+  // Open X share window with message
   const tweetText = encodeURIComponent("I just won my Rialo OG Badge...");
   const tweetUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
   window.open(tweetUrl, '_blank', 'width=550,height=420');
